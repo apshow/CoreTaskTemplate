@@ -9,19 +9,28 @@ public class Util {
 
     // реализуйте настройку соеденения с БД
 
-    private final String URL = "jdbc:mysql://localhost:3306/test";
-    private final String USER_NAME = "root";
-    private final String PASSWORD = "rootroot";
-    //private final String DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static final String URL = "jdbc:mysql://localhost:3306/test";
+    private static final String USER_NAME = "root";
+    private static final String PASSWORD = "rootroot";
+    private static Util instance;
 
-
-    public Connection getConnection() throws ClassNotFoundException, SQLException {
+    public Connection getConnection() {
         Connection connection = null;
-        //Class.forName(DRIVER);
-
-        connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
-        //System.out.println("connection + ");
+        try {
+            connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return connection;
     }
 
+    private Util() {
+    }
+
+    public static synchronized Util getInstance() {
+        if (instance == null) {
+            instance = new Util();
+        }
+        return instance;
+    }
 }
