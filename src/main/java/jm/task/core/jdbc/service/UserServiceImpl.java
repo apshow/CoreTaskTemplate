@@ -8,7 +8,6 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     UserDaoJDBCImpl userDaoJDBC = new UserDaoJDBCImpl();
-    User user = new User();
 
     public void createUsersTable() {
         userDaoJDBC.createUsersTable();
@@ -27,8 +26,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public List<User> getAllUsers() {
-        userDaoJDBC.getAllUsers();
-        return null;
+        return  userDaoJDBC.getAllUsers();
     }
 
     public void cleanUsersTable() {
