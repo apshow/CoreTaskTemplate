@@ -1,91 +1,132 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.util.Util;
+import org.hibernate.*;
 
-import javax.persistence.*;
 import java.util.List;
 
-@Entity
-@Table (name = "user")
+import static jm.task.core.jdbc.util.Util.getSessionFactory;
+
+
 public class UserDaoHibernateImpl implements UserDao {
 
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long user_id;
-
-    @Column (name = "name")
-    private String name;
-
-    @Column (name = "last_name")
-    private String lastName;
-
-    @Column (name = "age")
-    private Byte age;
-
-
-
-    public Long getUser_id() {
-        return user_id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setUser_id(Long user_id) {
-        this.user_id = user_id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public void setAge(Byte age) {
-        this.age = age;
-    }
-
-    public Byte getAge() {
-        return age;
-    }
 
     public UserDaoHibernateImpl() {
     }
 
     @Override
     public void createUsersTable() {
-
+        String sqlCreateUserTable = "CREATE TABLE IF NOT EXISTS user" +
+                "(user_id BIGINT(12) NOT NULL AUTO_INCREMENT," +
+                "name VARCHAR(45) NOT NULL," +
+                "last_name VARCHAR(45) NOT NULL," +
+                "age TINYINT(3) NOT NULL," +
+                "PRIMARY KEY (user_id));";
+        Session session = getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            session.createSQLQuery(sqlCreateUserTable).executeUpdate();
+            transaction.commit();
+        } catch (Exception ex) {
+            transaction.rollback();
+            ex.printStackTrace();
+        } finally {
+            session.close();
+        }
     }
 
     @Override
     public void dropUsersTable() {
-
+        String sqlDropUsersTable = "DROP TABLE IF EXISTS user;";
+        Session session = getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            session.createSQLQuery(sqlDropUsersTable).executeUpdate();
+            transaction.commit();
+        } catch (Exception ex) {
+            transaction.rollback();
+            ex.printStackTrace();
+        } finally {
+            session.close();
+        }
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-
+        Session session = getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            User user = new User(name, lastName, age);
+            session.save(user);
+            transaction.commit();
+            System.out.println("User " + name + " добавлен в таблицу.");
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
     }
 
     @Override
     public void removeUserById(long id) {
+        Session session = getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            Query query = session.createQuery("DELETE User WHERE id = :id");
+            query.setLong("id", id);
+            query.executeUpdate();
 
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
     }
 
     @Override
     public List<User> getAllUsers() {
-        return null;
+        List<User> userList = null;
+        Session session = getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            Query query = session.createQuery("FROM User");
+            userList = query.list();
+            transaction.commit();
+        } catch (Exception e){
+            transaction.rollback();
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+        return userList;
     }
 
     @Override
     public void cleanUsersTable() {
-
+        Session session = getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            session.createSQLQuery("DELETE from user").executeUpdate();
+            transaction.commit();
+        } catch (Exception ex) {
+            transaction.rollback();
+            ex.printStackTrace();
+        } finally {
+            session.close();
+        }
     }
 }
